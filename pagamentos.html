@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Pagamentos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2d3a4b;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+        }
+        .mes {
+            background: linear-gradient(90deg, #f8fafc 0%, #e0eafc 100%);
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+        }
+        h2 {
+            color: #3a7bd5;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .pagamento {
+            display: grid;
+            grid-template-columns: 30px 80px 120px 1fr 110px;
+            gap: 12px;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e3e9f0;
+            transition: background 0.2s;
+        }
+        .header {
+            font-weight: bold;
+            background: #e3e9f0;
+            border-radius: 6px 6px 0 0;
+        }
+        .total {
+            color: #fff;
+            background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+            padding: 10px 18px;
+            border-radius: 6px;
+            margin-top: 15px;
+            text-align: right;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+        }
+        .nubank { color: #8a05be; font-weight: bold; }
+        .picpay { color: #21c25e; font-weight: bold; }
+        .mercadopago { color: #009ee3; font-weight: bold; }
+        .pago {
+            text-decoration: line-through;
+            opacity: 0.6;
+            background: #d7f7e8 !important;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            accent-color: #43cea2;
+            cursor: pointer;
+        }
+        @media (max-width: 700px) {
+            .pagamento {
+                grid-template-columns: 30px 1fr 1fr;
+                grid-template-rows: auto auto;
+            }
+            .pagamento > div:nth-child(4), .pagamento > div:nth-child(5) {
+                grid-column: span 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Controle de Pagamentos</h1>
+        <div id="cronograma"></div>
+    </div>
+    <script>
+        // Dados dos pagamentos
+        const pagamentos = {
+            "Abril/2025": {
+                total: 1051.17,
+                pagamentos: [
+                    { data: "13/04", valor: 231.42, descricao: "Nubank Empréstimo (1/15)", instituicao: "nubank" },
+                    { data: "15/04", valor: 406.02, descricao: "PicPay Fatura (1/1)", instituicao: "picpay" },
+                    { data: "28/04", valor: 145.44, descricao: "PicPay Empréstimo (1/5)", instituicao: "picpay" },
+                    { data: "28/04", valor: 211.56, descricao: "Nubank Fatura (1/--)", instituicao: "nubank" },
+                    { data: "28/04", valor: 56.73, descricao: "Mercado Pago (1/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Maio/2025": {
+                total: 1507.15,
+                pagamentos: [
+                    { data: "13/05", valor: 231.42, descricao: "Nubank Empréstimo (2/15)", instituicao: "nubank" },
+                    { data: "18/05", valor: 623.00, descricao: "Mercado Pago (1/1)", instituicao: "mercadopago" },
+                    { data: "18/05", valor: 239.00, descricao: "Mercado Pago (1/6)", instituicao: "mercadopago" },
+                    { data: "28/05", valor: 145.44, descricao: "PicPay Empréstimo (2/5)", instituicao: "picpay" },
+                    { data: "28/05", valor: 211.56, descricao: "Nubank Fatura (2/--)", instituicao: "nubank" },
+                    { data: "28/05", valor: 56.73, descricao: "Mercado Pago (2/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Junho/2025": {
+                total: 884.15,
+                pagamentos: [
+                    { data: "13/06", valor: 231.42, descricao: "Nubank Empréstimo (3/15)", instituicao: "nubank" },
+                    { data: "18/06", valor: 239.00, descricao: "Mercado Pago (2/6)", instituicao: "mercadopago" },
+                    { data: "28/06", valor: 145.44, descricao: "PicPay Empréstimo (3/5)", instituicao: "picpay" },
+                    { data: "28/06", valor: 211.56, descricao: "Nubank Fatura (3/--)", instituicao: "nubank" },
+                    { data: "28/06", valor: 56.73, descricao: "Mercado Pago (3/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Julho/2025": {
+                total: 884.15,
+                pagamentos: [
+                    { data: "13/07", valor: 231.42, descricao: "Nubank Empréstimo (4/15)", instituicao: "nubank" },
+                    { data: "18/07", valor: 239.00, descricao: "Mercado Pago (3/6)", instituicao: "mercadopago" },
+                    { data: "28/07", valor: 145.44, descricao: "PicPay Empréstimo (4/5)", instituicao: "picpay" },
+                    { data: "28/07", valor: 211.56, descricao: "Nubank Fatura (4/--)", instituicao: "nubank" },
+                    { data: "28/07", valor: 56.73, descricao: "Mercado Pago (4/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Agosto/2025": {
+                total: 884.15,
+                pagamentos: [
+                    { data: "13/08", valor: 231.42, descricao: "Nubank Empréstimo (5/15)", instituicao: "nubank" },
+                    { data: "18/08", valor: 239.00, descricao: "Mercado Pago (4/6)", instituicao: "mercadopago" },
+                    { data: "28/08", valor: 145.44, descricao: "PicPay Empréstimo (5/5)", instituicao: "picpay" },
+                    { data: "28/08", valor: 211.56, descricao: "Nubank Fatura (5/--)", instituicao: "nubank" },
+                    { data: "28/08", valor: 56.73, descricao: "Mercado Pago (5/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Setembro/2025": {
+                total: 738.71,
+                pagamentos: [
+                    { data: "13/09", valor: 231.42, descricao: "Nubank Empréstimo (6/15)", instituicao: "nubank" },
+                    { data: "18/09", valor: 239.00, descricao: "Mercado Pago (5/6)", instituicao: "mercadopago" },
+                    { data: "28/09", valor: 211.56, descricao: "Nubank Fatura (6/--)", instituicao: "nubank" },
+                    { data: "28/09", valor: 56.73, descricao: "Mercado Pago (6/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Outubro/2025": {
+                total: 738.71,
+                pagamentos: [
+                    { data: "13/10", valor: 231.42, descricao: "Nubank Empréstimo (7/15)", instituicao: "nubank" },
+                    { data: "18/10", valor: 239.00, descricao: "Mercado Pago (6/6)", instituicao: "mercadopago" },
+                    { data: "28/10", valor: 211.56, descricao: "Nubank Fatura (7/--)", instituicao: "nubank" },
+                    { data: "28/10", valor: 56.73, descricao: "Mercado Pago (7/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Novembro/2025": {
+                total: 499.71,
+                pagamentos: [
+                    { data: "13/11", valor: 231.42, descricao: "Nubank Empréstimo (8/15)", instituicao: "nubank" },
+                    { data: "28/11", valor: 211.56, descricao: "Nubank Fatura (8/--)", instituicao: "nubank" },
+                    { data: "28/11", valor: 56.73, descricao: "Mercado Pago (8/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Dezembro/2025": {
+                total: 499.71,
+                pagamentos: [
+                    { data: "13/12", valor: 231.42, descricao: "Nubank Empréstimo (9/15)", instituicao: "nubank" },
+                    { data: "28/12", valor: 211.56, descricao: "Nubank Fatura (9/--)", instituicao: "nubank" },
+                    { data: "28/12", valor: 56.73, descricao: "Mercado Pago (9/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Janeiro/2026": {
+                total: 499.71,
+                pagamentos: [
+                    { data: "13/01", valor: 231.42, descricao: "Nubank Empréstimo (10/15)", instituicao: "nubank" },
+                    { data: "28/01", valor: 211.56, descricao: "Nubank Fatura (10/--)", instituicao: "nubank" },
+                    { data: "28/01", valor: 56.73, descricao: "Mercado Pago (10/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Fevereiro/2026": {
+                total: 499.71,
+                pagamentos: [
+                    { data: "13/02", valor: 231.42, descricao: "Nubank Empréstimo (11/15)", instituicao: "nubank" },
+                    { data: "28/02", valor: 211.56, descricao: "Nubank Fatura (11/--)", instituicao: "nubank" },
+                    { data: "28/02", valor: 56.73, descricao: "Mercado Pago (11/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Março/2026": {
+                total: 499.71,
+                pagamentos: [
+                    { data: "13/03", valor: 231.42, descricao: "Nubank Empréstimo (12/15)", instituicao: "nubank" },
+                    { data: "28/03", valor: 211.56, descricao: "Nubank Fatura (12/--)", instituicao: "nubank" },
+                    { data: "28/03", valor: 56.73, descricao: "Mercado Pago (12/12)", instituicao: "mercadopago" }
+                ]
+            },
+            "Abril/2026": {
+                total: 442.98,
+                pagamentos: [
+                    { data: "13/04", valor: 231.42, descricao: "Nubank Empréstimo (13/15)", instituicao: "nubank" },
+                    { data: "28/04", valor: 211.56, descricao: "Nubank Fatura (13/--)", instituicao: "nubank" }
+                ]
+            },
+            "Maio/2026": {
+                total: 442.98,
+                pagamentos: [
+                    { data: "13/05", valor: 231.42, descricao: "Nubank Empréstimo (14/15)", instituicao: "nubank" },
+                    { data: "28/05", valor: 211.56, descricao: "Nubank Fatura (14/--)", instituicao: "nubank" }
+                ]
+            },
+            "Junho/2026": {
+                total: 442.98,
+                pagamentos: [
+                    { data: "13/06", valor: 231.42, descricao: "Nubank Empréstimo (15/15)", instituicao: "nubank" },
+                    { data: "28/06", valor: 211.56, descricao: "Nubank Fatura (15/--)", instituicao: "nubank" }
+                ]
+            }
+        };
+
+        // Função para gerar uma chave única para cada pagamento
+        function getPagamentoKey(mes, idx) {
+            return `${mes}__${idx}`;
+        }
+
+        // Carregar status dos pagamentos do localStorage
+        function carregarStatusPagamentos() {
+            const data = localStorage.getItem('pagamentosStatus');
+            return data ? JSON.parse(data) : {};
+        }
+
+        // Salvar status dos pagamentos no localStorage
+        function salvarStatusPagamentos(status) {
+            localStorage.setItem('pagamentosStatus', JSON.stringify(status));
+        }
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function gerarCronograma() {
+            const container = document.getElementById('cronograma');
+            const statusPagamentos = carregarStatusPagamentos();
+
+            for (const [mes, dados] of Object.entries(pagamentos)) {
+                const divMes = document.createElement('div');
+                divMes.className = 'mes';
+                divMes.innerHTML = `
+                    <h2>${mes}</h2>
+                    <div class="pagamento header">
+                        <div></div>
+                        <div>Data</div>
+                        <div>Instituição</div>
+                        <div>Descrição</div>
+                        <div>Valor</div>
+                    </div>
+                `;
+                dados.pagamentos.forEach((pagamento, idx) => {
+                    const key = getPagamentoKey(mes, idx);
+                    const pago = !!statusPagamentos[key];
+
+                    const divPagamento = document.createElement('div');
+                    divPagamento.className = 'pagamento' + (pago ? ' pago' : '');
+                    divPagamento.setAttribute('data-key', key);
+
+                    divPagamento.innerHTML = `
+                        <div>
+                            <input type="checkbox" ${pago ? 'checked' : ''} data-key="${key}">
+                        </div>
+                        <div>${pagamento.data}</div>
+                        <div class="${pagamento.instituicao}">${pagamento.instituicao.charAt(0).toUpperCase() + pagamento.instituicao.slice(1)}</div>
+                        <div>${pagamento.descricao}</div>
+                        <div>${formatarMoeda(pagamento.valor)}</div>
+                    `;
+                    divMes.appendChild(divPagamento);
+                });
+                const divTotal = document.createElement('div');
+                divTotal.className = 'total';
+                divTotal.textContent = `Total do Mês: ${formatarMoeda(dados.total)}`;
+                divMes.appendChild(divTotal);
+
+                container.appendChild(divMes);
+            }
+
+            // Adiciona evento aos checkboxes
+            container.addEventListener('change', function(event) {
+                if (event.target.type === 'checkbox') {
+                    const key = event.target.getAttribute('data-key');
+                    const divPagamento = event.target.closest('.pagamento');
+                    const statusPagamentos = carregarStatusPagamentos();
+                    if (event.target.checked) {
+                        divPagamento.classList.add('pago');
+                        statusPagamentos[key] = true;
+                    } else {
+                        divPagamento.classList.remove('pago');
+                        statusPagamentos[key] = false;
+                    }
+                    salvarStatusPagamentos(statusPagamentos);
+                }
+            });
+        }
+
+        window.onload = gerarCronograma;
+    </script>
+</body>
+</html>
